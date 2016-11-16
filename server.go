@@ -72,7 +72,7 @@ func Register(instance, service, host string, addrs []net.IP, domain string, por
 		entry.HostName = fmt.Sprintf("%s.", trimDot(entry.HostName))
 	}
 	if len(addrs) == 0 {
-		addrs, err := net.LookupIP(entry.HostName)
+		addrs, err = net.LookupIP(entry.HostName)
 		if err != nil {
 			// Try appending the host domain suffix and lookup again
 			// (required for Linux-based hosts)
@@ -83,7 +83,7 @@ func Register(instance, service, host string, addrs []net.IP, domain string, por
 			}
 		}
 	}
-	
+
 	for i := 0; i < len(addrs); i++ {
 		if ipv4 := addrs[i].To4(); ipv4 != nil {
 			entry.AddrIPv4 = addrs[i]
