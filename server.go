@@ -43,10 +43,12 @@ var (
 
 // Register a service by given arguments. This call will take the system's hostname
 // and lookup IP by that hostname.
-func Register(instance, service, domain string, port int, text []string, iface *net.Interface) (*Server, error) {
+func Register(instance, service, host string, addrs []net.IP, domain string, port int, text []string, iface *net.Interface) (*Server, error) {
 	entry := NewServiceEntry(instance, service, domain)
 	entry.Port = port
 	entry.Text = text
+	entry.HostName = host
+
 
 	if entry.Instance == "" {
 		return nil, fmt.Errorf("Missing service instance name")
@@ -67,19 +69,21 @@ func Register(instance, service, domain string, port int, text []string, iface *
 		if err != nil {
 			return nil, fmt.Errorf("Could not determine host")
 		}
+		entry.HostName = fmt.Sprintf("%s.", trimDot(entry.HostName))
 	}
-	entry.HostName = fmt.Sprintf("%s.", trimDot(entry.HostName))
-
-	addrs, err := net.LookupIP(entry.HostName)
-	if err != nil {
-		// Try appending the host domain suffix and lookup again
-		// (required for Linux-based hosts)
-		tmpHostName := fmt.Sprintf("%s%s.", entry.HostName, entry.Domain)
-		addrs, err = net.LookupIP(tmpHostName)
+	if len(addrs) == 0 {
+		addrs, err := net.LookupIP(entry.HostName)
 		if err != nil {
-			return nil, fmt.Errorf("Could not determine host IP addresses for %s", entry.HostName)
+			// Try appending the host domain suffix and lookup again
+			// (required for Linux-based hosts)
+			tmpHostName := fmt.Sprintf("%s%s.", entry.HostName, entry.Domain)
+			addrs, err = net.LookupIP(tmpHostName)
+			if err != nil {
+				return nil, fmt.Errorf("Could not determine host IP addresses for %s", entry.HostName)
+			}
 		}
 	}
+	
 	for i := 0; i < len(addrs); i++ {
 		if ipv4 := addrs[i].To4(); ipv4 != nil {
 			entry.AddrIPv4 = addrs[i]
