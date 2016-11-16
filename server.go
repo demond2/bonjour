@@ -106,7 +106,7 @@ func Register(instance, service, host string, addrs []net.IP, domain string, por
 
 // Register a service proxy by given argument. This call will skip the hostname/IP lookup and
 // will use the provided values.
-func RegisterProxy(instance, service, domain string, port int, host, ip string, text []string, iface *net.Interface) (*Server, error) {
+func RegisterProxy(instance, service, domain string, port int, host string, ip string, text []string, iface *net.Interface) (*Server, error) {
 	entry := NewServiceEntry(instance, service, domain)
 	entry.Port = port
 	entry.Text = text
